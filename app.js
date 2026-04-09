@@ -275,6 +275,7 @@ let storageInfo = {
   detail: "Using browser backup only.",
   lastSaved: ""
 };
+
 let draggedSectionId = null;
 let draggedEntryId = null;
 let draggedEntrySectionId = null;
@@ -310,11 +311,7 @@ function bindEvents() {
     window.alert('For a clean PDF, disable "Headers and footers" in the browser print dialog.');
     window.print();
   });
-  resetDemoBtn.addEventListener("click", () => {
-    state = structuredClone(demoState);
-    persist();
-    render();
-  });
+  resetDemoBtn.addEventListener("click", loadDemoPerson);
   showGuidesToggle.addEventListener("change", renderPreview);
   addFieldBtn.addEventListener("click", () => addFieldRow());
 
@@ -356,10 +353,10 @@ function bindEvents() {
   });
   sectionsContainer.addEventListener("click", handleSectionClicks);
   sectionsContainer.addEventListener("input", handleSectionInputs);
-  sectionsContainer.addEventListener("dragstart", handleSectionDragStart);
-  sectionsContainer.addEventListener("dragover", handleSectionDragOver);
-  sectionsContainer.addEventListener("drop", handleSectionDrop);
-  sectionsContainer.addEventListener("dragend", handleSectionDragEnd);
+  sectionsContainer.addEventListener("dragstart", handleDragStart);
+  sectionsContainer.addEventListener("dragover", handleDragOver);
+  sectionsContainer.addEventListener("drop", handleDrop);
+  sectionsContainer.addEventListener("dragend", handleDragEnd);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -580,7 +577,7 @@ function renderEntryCard(section, entry) {
   }).join("");
 
   return `
-    <section class="entry-card" data-entry-id="${entry.id}" data-parent-section-id="${section.id}" draggable="true">
+    <section class="entry-card" data-entry-id="${entry.id}" draggable="true">
       <div class="entry-header">
         <strong>${escapeHtml(summarizeEntry(section, entry))}</strong>
         <button data-action="delete-entry" class="danger small">Delete entry</button>
@@ -597,90 +594,6 @@ function renderFieldInput(sectionId, entryId, field, value) {
     return `<textarea rows="4" ${common}>${encoded}</textarea>`;
   }
   return `<input type="${inputTypeFor(field.type)}" value="${encoded}" ${common}>`;
-}
-
-function handleSectionDragStart(event) {
-  const entryCard = event.target.closest(".entry-card[draggable='true']");
-  if (entryCard) {
-    draggedEntryId = entryCard.dataset.entryId;
-    draggedEntrySectionId = entryCard.dataset.parentSectionId;
-    draggedSectionId = null;
-    entryCard.classList.add("dragging");
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedEntryId);
-    }
-    return;
-  }
-
-  const sectionCard = event.target.closest(".section-card[draggable='true']");
-  if (sectionCard) {
-    draggedSectionId = sectionCard.dataset.sectionId;
-    draggedEntryId = null;
-    draggedEntrySectionId = null;
-    sectionCard.classList.add("dragging");
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedSectionId);
-    }
-  }
-}
-
-function handleSectionDragOver(event) {
-  const sectionCard = event.target.closest(".section-card");
-  const entryCard = event.target.closest(".entry-card");
-
-  if (draggedEntryId && entryCard && entryCard.dataset.parentSectionId === draggedEntrySectionId) {
-    event.preventDefault();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-    return;
-  }
-
-  if (draggedSectionId && sectionCard) {
-    event.preventDefault();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-  }
-}
-
-function handleSectionDrop(event) {
-  const person = currentPerson();
-  if (!person) return;
-
-  const targetEntry = event.target.closest(".entry-card");
-  if (draggedEntryId && targetEntry && targetEntry.dataset.parentSectionId === draggedEntrySectionId) {
-    event.preventDefault();
-    const section = person.sections.find((item) => item.id === draggedEntrySectionId);
-    if (!section) return;
-    const fromIndex = section.entries.findIndex((item) => item.id === draggedEntryId);
-    const toIndex = section.entries.findIndex((item) => item.id === targetEntry.dataset.entryId);
-    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
-    const [moved] = section.entries.splice(fromIndex, 1);
-    section.entries.splice(toIndex, 0, moved);
-    pushAudit("Reordered entries", `Updated entry order in ${section.title}.`);
-    persist();
-    render();
-    return;
-  }
-
-  const targetSection = event.target.closest(".section-card");
-  if (draggedSectionId && targetSection) {
-    event.preventDefault();
-    const fromIndex = person.sections.findIndex((item) => item.id === draggedSectionId);
-    const toIndex = person.sections.findIndex((item) => item.id === targetSection.dataset.sectionId);
-    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
-    const [moved] = person.sections.splice(fromIndex, 1);
-    person.sections.splice(toIndex, 0, moved);
-    pushAudit("Reordered sections", "Updated section order.");
-    persist();
-    render();
-  }
-}
-
-function handleSectionDragEnd() {
-  document.querySelectorAll(".dragging").forEach((element) => element.classList.remove("dragging"));
-  draggedSectionId = null;
-  draggedEntryId = null;
-  draggedEntrySectionId = null;
 }
 
 function handleSectionClicks(event) {
@@ -725,6 +638,90 @@ function handleSectionInputs(event) {
   persist();
   renderPreview();
   renderDashboard();
+}
+
+function handleDragStart(event) {
+  const entryCard = event.target.closest('.entry-card');
+  if (entryCard) {
+    const sectionCard = entryCard.closest('[data-section-id]');
+    draggedEntryId = entryCard.dataset.entryId;
+    draggedEntrySectionId = sectionCard?.dataset.sectionId || null;
+    draggedSectionId = null;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', draggedEntryId);
+    return;
+  }
+
+  const sectionCard = event.target.closest('.section-card');
+  if (sectionCard) {
+    draggedSectionId = sectionCard.dataset.sectionId;
+    draggedEntryId = null;
+    draggedEntrySectionId = null;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', draggedSectionId);
+  }
+}
+
+function handleDragOver(event) {
+  if (event.target.closest('.entry-card') || event.target.closest('.section-card')) {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+  }
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  const person = currentPerson();
+  if (!person) return;
+
+  const targetEntry = event.target.closest('.entry-card');
+  if (draggedEntryId && draggedEntrySectionId && targetEntry) {
+    const targetSectionId = targetEntry.closest('[data-section-id]')?.dataset.sectionId;
+    if (!targetSectionId || targetSectionId !== draggedEntrySectionId) {
+      resetDragState();
+      return;
+    }
+    const section = person.sections.find((item) => item.id === targetSectionId);
+    if (!section) {
+      resetDragState();
+      return;
+    }
+    const fromIndex = section.entries.findIndex((item) => item.id === draggedEntryId);
+    const toIndex = section.entries.findIndex((item) => item.id === targetEntry.dataset.entryId);
+    if (fromIndex >= 0 && toIndex >= 0 && fromIndex !== toIndex) {
+      const [moved] = section.entries.splice(fromIndex, 1);
+      section.entries.splice(toIndex, 0, moved);
+      pushAudit('Reordered entries', `Updated entry order in ${section.title}.`);
+      persist();
+      render();
+    }
+    resetDragState();
+    return;
+  }
+
+  const targetSection = event.target.closest('.section-card');
+  if (draggedSectionId && targetSection) {
+    const fromIndex = person.sections.findIndex((item) => item.id === draggedSectionId);
+    const toIndex = person.sections.findIndex((item) => item.id === targetSection.dataset.sectionId);
+    if (fromIndex >= 0 && toIndex >= 0 && fromIndex !== toIndex) {
+      const [moved] = person.sections.splice(fromIndex, 1);
+      person.sections.splice(toIndex, 0, moved);
+      pushAudit('Reordered sections', 'Updated section order.');
+      persist();
+      render();
+    }
+  }
+  resetDragState();
+}
+
+function handleDragEnd() {
+  resetDragState();
+}
+
+function resetDragState() {
+  draggedSectionId = null;
+  draggedEntryId = null;
+  draggedEntrySectionId = null;
 }
 
 function openSectionDialog(sectionId = null) {
@@ -1137,13 +1134,30 @@ function restoreState(event) {
   if (!file) return;
   file.text().then((text) => {
     const parsed = JSON.parse(text);
-    state = sanitizeState(parsed);
+    state = buildStateFromBackup(parsed);
     if (!state.people.length) throw new Error("Invalid backup file.");
     pushAudit("Restored backup", "Loaded CV registry from a JSON backup.");
     persist();
     render();
   }).catch(() => window.alert("Could not restore JSON backup."))
     .finally(() => { restoreJsonInput.value = ""; });
+}
+
+function buildStateFromBackup(parsed) {
+  if (parsed && Array.isArray(parsed.people)) {
+    return sanitizeState(parsed);
+  }
+
+  if (parsed && parsed.profile && Array.isArray(parsed.sections)) {
+    const singlePerson = { ...parsed };
+    normalizePerson(singlePerson);
+    return sanitizeState({
+      activePersonId: singlePerson.id,
+      people: [singlePerson]
+    });
+  }
+
+  throw new Error("Invalid backup file.");
 }
 
 function summarizeEntry(section, entry) {
@@ -1379,6 +1393,38 @@ function ensurePersonSelected() {
   } else {
     hasPromptedPersonSelection = true;
   }
+}
+
+function loadDemoPerson() {
+  const existingDemo = state.people.find(isDemoPerson);
+  if (existingDemo) {
+    state.activePersonId = existingDemo.id;
+    persist();
+    render();
+    return;
+  }
+
+  const demo = structuredClone(demoPerson);
+  demo.id = crypto.randomUUID();
+  demo.folderName = null;
+  demo.sections = demo.sections.map(normalizeSection);
+  demo.auditLog = [{
+    id: crypto.randomUUID(),
+    action: "Loaded demo person",
+    detail: "Added the demo CV without removing existing people.",
+    timestamp: new Date().toISOString()
+  }];
+
+  state.people.push(demo);
+  state.activePersonId = demo.id;
+  hasPromptedPersonSelection = true;
+  persist();
+  render();
+}
+
+function isDemoPerson(person) {
+  return person?.profile?.name === demoPerson.profile.name
+    && person?.profile?.headline === demoPerson.profile.headline;
 }
 
 function pushAudit(action, detail) {
