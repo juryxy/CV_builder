@@ -246,6 +246,7 @@ const importSectionSelect = document.getElementById("importSectionSelect");
 const importDelimiterSelect = document.getElementById("importDelimiterSelect");
 const importTextarea = document.getElementById("importTextarea");
 const runImportBtn = document.getElementById("runImportBtn");
+let importSectionHint = null;
 const entryDialog = document.getElementById("entryDialog");
 const entrySectionSelect = document.getElementById("entrySectionSelect");
 const entryFormFields = document.getElementById("entryFormFields");
@@ -327,6 +328,7 @@ function bindEvents() {
   });
 
   runImportBtn.addEventListener("click", importRowsIntoSection);
+  importSectionSelect.addEventListener("change", renderImportDialogHint);
   entrySectionSelect.addEventListener("change", renderEntryDialogFields);
   submitEntryBtn.addEventListener("click", submitNewEntryFromDialog);
   followupSameSectionBtn.addEventListener("click", () => reopenEntryDialogAfterAdd("same"));
@@ -828,7 +830,69 @@ function openImportDialog() {
   importSectionSelect.innerHTML = person.sections.map((section) => `<option value="${section.id}">${escapeHtml(section.title)}</option>`).join("");
   importTextarea.value = "";
   importDelimiterSelect.value = "auto";
+  ensureImportDialogHint();
+  renderImportDialogHint();
   importDialog.showModal();
+}
+
+function ensureImportDialogHint() {
+  if (importSectionHint?.isConnected) return importSectionHint;
+  const helper = importDialog.querySelector('.helper-text');
+  importSectionHint = document.createElement('div');
+  importSectionHint.id = 'importSectionHint';
+  importSectionHint.className = 'import-section-hint';
+  if (helper?.parentNode) {
+    helper.parentNode.insertBefore(importSectionHint, helper.nextSibling);
+  } else {
+    const actions = importDialog.querySelector('.dialog-actions');
+    if (actions?.parentNode) {
+      actions.parentNode.insertBefore(importSectionHint, actions);
+    } else {
+      importDialog.append(importSectionHint);
+    }
+  }
+  return importSectionHint;
+}
+
+function renderImportDialogHint() {
+  const hint = ensureImportDialogHint();
+  const section = currentPerson()?.sections.find((item) => item.id === importSectionSelect.value);
+  if (!section) {
+    hint.innerHTML = '<div class="helper-text">Select a section to see the expected import format.</div>';
+    return;
+  }
+
+  const exampleHeaders = section.fields.map((field) => field.label).join(';');
+  const exampleValues = section.fields.map((field, index) => exampleValueForField(field, index)).join(';');
+
+  hint.innerHTML = `
+    <div class="import-hint-card">
+      <strong>Import format for ${escapeHtml(section.title)}</strong>
+      <div class="helper-text">Use the first row as column headers. Best match: the same order and names as this section.</div>
+      <div class="import-hint-fields">${section.fields.map((field) => `<span>${escapeHtml(field.label)}</span>`).join('')}</div>
+      <pre class="import-hint-example">${escapeHtml(exampleHeaders)}
+${escapeHtml(exampleValues)}</pre>
+    </div>
+  `;
+}
+
+function exampleValueForField(field, index) {
+  const key = normalizeKey(field.key || field.label);
+  if (key.includes('period') || key.includes('year') || key.includes('date')) return index === 0 ? '2023-present' : '2024';
+  if (key.includes('role') || key.includes('title') || key.includes('position')) return 'Professor for Digital Biomarkers';
+  if (key.includes('institution') || key.includes('organization') || key.includes('company')) return 'Heinrich Heine University Duesseldorf';
+  if (key.includes('degree')) return 'PhD in Neuroscience';
+  if (key.includes('project')) return 'Digital Biomarker Platform';
+  if (key.includes('award')) return 'Research Award';
+  if (key.includes('citation')) return 'Author A, Author B. Example publication title. Journal, 2024.';
+  if (key.includes('number')) return '1';
+  if (key.includes('language')) return 'English';
+  if (key.includes('level')) return 'Fluent';
+  if (key.includes('category')) return 'Programming';
+  if (key.includes('label')) return 'Email';
+  if (key.includes('value')) return 'name@example.org';
+  if (key.includes('details') || key.includes('notes')) return 'Short description or additional details';
+  return `Example ${index + 1}`;
 }
 
 function importRowsIntoSection() {
