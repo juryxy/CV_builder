@@ -1,8 +1,141 @@
-const STORAGE_KEY = "offline-cv-builder-state-v4";
+const STORAGE_KEY = "offline-cv-builder-state-v5";
 const HANDLE_DB_NAME = "cv-builder-fs";
 const HANDLE_STORE_NAME = "handles";
 const HANDLE_KEY = "root-folder";
 const STORAGE_PROMPT_KEY = "cv-builder-storage-prompt-seen";
+
+const SECTION_TEMPLATES = [
+  {
+    key: "personal",
+    label: "Personal information",
+    create: () => ({
+      title: "Personal information",
+      subtitle: "",
+      renderMode: "pair-list",
+      includeInCv: true,
+      fields: [
+        makeField("Label", "label", "text", "third"),
+        makeField("Value", "value", "text", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { label: "", value: "" } }]
+    })
+  },
+  {
+    key: "experience",
+    label: "Professional experience",
+    create: () => ({
+      title: "Professional experience",
+      subtitle: "",
+      renderMode: "date-list",
+      includeInCv: true,
+      fields: [
+        makeField("Period", "period", "text", "third"),
+        makeField("Role", "role", "text", "third"),
+        makeField("Institution", "institution", "text", "third"),
+        makeField("Details", "details", "textarea", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { period: "", role: "", institution: "", details: "" } }]
+    })
+  },
+  {
+    key: "education",
+    label: "Education",
+    create: () => ({
+      title: "Education",
+      subtitle: "",
+      renderMode: "date-list",
+      includeInCv: true,
+      fields: [
+        makeField("Period", "period", "text", "third"),
+        makeField("Degree", "degree", "text", "third"),
+        makeField("Institution", "institution", "text", "third"),
+        makeField("Details", "details", "textarea", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { period: "", degree: "", institution: "", details: "" } }]
+    })
+  },
+  {
+    key: "skills",
+    label: "Skills",
+    create: () => ({
+      title: "Skills",
+      subtitle: "",
+      renderMode: "pair-list",
+      includeInCv: true,
+      fields: [
+        makeField("Category", "category", "text", "third"),
+        makeField("Details", "details", "text", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { category: "", details: "" } }]
+    })
+  },
+  {
+    key: "awards",
+    label: "Awards and honors",
+    create: () => ({
+      title: "Awards and honors",
+      subtitle: "",
+      renderMode: "date-list",
+      includeInCv: true,
+      fields: [
+        makeField("Year", "year", "year", "quarter"),
+        makeField("Award", "award", "text", "third"),
+        makeField("Organization", "organization", "text", "third"),
+        makeField("Details", "details", "textarea", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { year: "", award: "", organization: "", details: "" } }]
+    })
+  },
+  {
+    key: "publications",
+    label: "Selected publications",
+    create: () => ({
+      title: "Selected publications",
+      subtitle: "",
+      renderMode: "publication-list",
+      includeInCv: true,
+      fields: [
+        makeField("No.", "number", "text", "quarter"),
+        makeField("Citation", "citation", "textarea", "full"),
+        makeField("Year", "year", "year", "quarter")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { number: "", citation: "", year: "" } }]
+    })
+  },
+  {
+    key: "projects",
+    label: "Projects",
+    create: () => ({
+      title: "Projects",
+      subtitle: "",
+      renderMode: "date-list",
+      includeInCv: true,
+      fields: [
+        makeField("Period", "period", "text", "third"),
+        makeField("Project", "project", "text", "third"),
+        makeField("Role", "role", "text", "third"),
+        makeField("Details", "details", "textarea", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { period: "", project: "", role: "", details: "" } }]
+    })
+  },
+  {
+    key: "languages",
+    label: "Languages",
+    create: () => ({
+      title: "Languages",
+      subtitle: "",
+      renderMode: "pair-list",
+      includeInCv: true,
+      fields: [
+        makeField("Language", "language", "text", "third"),
+        makeField("Level", "level", "text", "third"),
+        makeField("Notes", "notes", "text", "full")
+      ],
+      entries: [{ id: crypto.randomUUID(), values: { language: "", level: "", notes: "" } }]
+    })
+  }
+];
 
 const demoPerson = {
   id: crypto.randomUUID(),
@@ -21,35 +154,15 @@ const demoPerson = {
     }
   ],
   sections: [
-    {
-      id: crypto.randomUUID(),
-      title: "Personal information",
-      subtitle: "",
-      renderMode: "pair-list",
-      includeInCv: true,
-      fields: [
-        { id: crypto.randomUUID(), label: "Label", key: "label", type: "text", width: "third" },
-        { id: crypto.randomUUID(), label: "Value", key: "value", type: "text", width: "full" }
-      ],
+    populateTemplate(SECTION_TEMPLATES.find((item) => item.key === "personal").create(), {
       entries: [
         { id: crypto.randomUUID(), values: { label: "Name", value: "Prof. Dr. Alex Example" } },
         { id: crypto.randomUUID(), values: { label: "Address", value: "Institute for Example Research, Sample Street 1, 12345 Sample City, Germany" } },
         { id: crypto.randomUUID(), values: { label: "E-mail", value: "alex@example.org" } },
         { id: crypto.randomUUID(), values: { label: "Nationality", value: "German" } }
       ]
-    },
-    {
-      id: crypto.randomUUID(),
-      title: "Professional experience",
-      subtitle: "",
-      renderMode: "date-list",
-      includeInCv: true,
-      fields: [
-        { id: crypto.randomUUID(), label: "Period", key: "period", type: "text", width: "third" },
-        { id: crypto.randomUUID(), label: "Role", key: "role", type: "text", width: "third" },
-        { id: crypto.randomUUID(), label: "Institution", key: "institution", type: "text", width: "third" },
-        { id: crypto.randomUUID(), label: "Details", key: "details", type: "textarea", width: "full" }
-      ],
+    }),
+    populateTemplate(SECTION_TEMPLATES.find((item) => item.key === "experience").create(), {
       entries: [
         {
           id: crypto.randomUUID(),
@@ -61,18 +174,8 @@ const demoPerson = {
           }
         }
       ]
-    },
-    {
-      id: crypto.randomUUID(),
-      title: "Selected publications",
-      subtitle: "",
-      renderMode: "publication-list",
-      includeInCv: true,
-      fields: [
-        { id: crypto.randomUUID(), label: "No.", key: "number", type: "text", width: "quarter" },
-        { id: crypto.randomUUID(), label: "Citation", key: "citation", type: "textarea", width: "full" },
-        { id: crypto.randomUUID(), label: "Year", key: "year", type: "year", width: "quarter" }
-      ],
+    }),
+    populateTemplate(SECTION_TEMPLATES.find((item) => item.key === "publications").create(), {
       entries: [
         {
           id: crypto.randomUUID(),
@@ -83,7 +186,7 @@ const demoPerson = {
           }
         }
       ]
-    }
+    })
   ]
 };
 
@@ -92,11 +195,14 @@ const demoState = {
   people: [demoPerson]
 };
 
+const emptyState = {
+  activePersonId: null,
+  people: []
+};
+
 let state = loadState();
 let editingSectionId = null;
 let hasPromptedPersonSelection = false;
-let draggedEntryId = null;
-let draggedSectionId = null;
 
 const profileNameInput = document.getElementById("profileName");
 const profileHeadlineInput = document.getElementById("profileHeadline");
@@ -104,14 +210,14 @@ const profileSummaryInput = document.getElementById("profileSummary");
 const addEntryFlowBtn = document.getElementById("addEntryFlowBtn");
 const addSectionBtn = document.getElementById("addSectionBtn");
 const importBtn = document.getElementById("importBtn");
-const addPersonalPresetBtn = document.getElementById("addPersonalPresetBtn");
-const addTimelinePresetBtn = document.getElementById("addTimelinePresetBtn");
-const addPublicationPresetBtn = document.getElementById("addPublicationPresetBtn");
+const addTemplateSectionBtn = document.getElementById("addTemplateSectionBtn");
+const sectionTemplateSelect = document.getElementById("sectionTemplateSelect");
 const activePersonCard = document.getElementById("activePersonCard");
 const switchPersonBtn = document.getElementById("switchPersonBtn");
 const addPersonBtn = document.getElementById("addPersonBtn");
 const connectFolderBtn = document.getElementById("connectFolderBtn");
 const storageStatus = document.getElementById("storageStatus");
+const storagePanel = document.getElementById("storagePanel");
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 const restoreJsonInput = document.getElementById("restoreJsonInput");
 const printBtn = document.getElementById("printBtn");
@@ -172,10 +278,6 @@ let storageInfo = {
 bindEvents();
 initApp();
 
-function on(element, eventName, handler) {
-  if (element) element.addEventListener(eventName, handler);
-}
-
 function bindEvents() {
   [profileNameInput, profileHeadlineInput, profileSummaryInput].forEach((element) => {
     element.addEventListener("input", () => {
@@ -187,70 +289,68 @@ function bindEvents() {
       persist();
       renderDashboard();
       renderPreview();
+      renderActivePersonCard();
     });
   });
 
-  on(addEntryFlowBtn, "click", () => openEntryDialog());
-  on(addSectionBtn, "click", () => openSectionDialog());
-  on(switchPersonBtn, "click", openPersonPickerDialog);
-  on(addPersonBtn, "click", openPersonDialog);
-  on(connectFolderBtn, "click", connectFolder);
-  on(importBtn, "click", openImportDialog);
-  on(addPersonalPresetBtn, "click", () => addPresetSection("personal"));
-  on(addTimelinePresetBtn, "click", () => addPresetSection("timeline"));
-  on(addPublicationPresetBtn, "click", () => addPresetSection("publication"));
-  on(exportJsonBtn, "click", exportState);
-  on(restoreJsonInput, "change", restoreState);
-  on(printBtn, "click", () => window.print());
-  on(resetDemoBtn, "click", () => {
+  addEntryFlowBtn.addEventListener("click", () => openEntryDialog());
+  addSectionBtn.addEventListener("click", () => openSectionDialog());
+  addTemplateSectionBtn.addEventListener("click", addSelectedTemplateSection);
+  switchPersonBtn.addEventListener("click", openPersonPickerDialog);
+  addPersonBtn.addEventListener("click", openPersonDialog);
+  connectFolderBtn.addEventListener("click", connectFolder);
+  importBtn.addEventListener("click", openImportDialog);
+  exportJsonBtn.addEventListener("click", exportState);
+  restoreJsonInput.addEventListener("change", restoreState);
+  printBtn.addEventListener("click", () => {
+    window.alert('For a clean PDF, disable "Headers and footers" in the browser print dialog.');
+    window.print();
+  });
+  resetDemoBtn.addEventListener("click", () => {
     state = structuredClone(demoState);
     persist();
     render();
   });
-  on(showGuidesToggle, "change", renderPreview);
-  on(addFieldBtn, "click", () => addFieldRow());
+  showGuidesToggle.addEventListener("change", renderPreview);
+  addFieldBtn.addEventListener("click", () => addFieldRow());
 
-  on(fieldRows, "click", (event) => {
+  fieldRows.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action='remove-field']");
     if (button) {
       button.closest(".field-row")?.remove();
     }
   });
 
-  on(sectionForm, "submit", (event) => {
+  sectionForm.addEventListener("submit", (event) => {
     event.preventDefault();
     saveSectionFromDialog();
   });
 
-  on(runImportBtn, "click", importRowsIntoSection);
-  on(entrySectionSelect, "change", renderEntryDialogFields);
-  on(submitEntryBtn, "click", submitNewEntryFromDialog);
-  on(followupSameSectionBtn, "click", () => reopenEntryDialogAfterAdd("same"));
-  on(followupDifferentSectionBtn, "click", () => reopenEntryDialogAfterAdd("different"));
-  on(followupBackOverviewBtn, "click", () => {
+  runImportBtn.addEventListener("click", importRowsIntoSection);
+  entrySectionSelect.addEventListener("change", renderEntryDialogFields);
+  submitEntryBtn.addEventListener("click", submitNewEntryFromDialog);
+  followupSameSectionBtn.addEventListener("click", () => reopenEntryDialogAfterAdd("same"));
+  followupDifferentSectionBtn.addEventListener("click", () => reopenEntryDialogAfterAdd("different"));
+  followupBackOverviewBtn.addEventListener("click", () => {
     entryFollowupDialog.close();
     activateTab("overviewTab");
   });
-  on(personPickerAddBtn, "click", () => {
+  personPickerAddBtn.addEventListener("click", () => {
     personPickerDialog.close();
     openPersonDialog();
   });
-  on(savePersonBtn, "click", saveNewPerson);
-  on(storagePromptYesBtn, "click", async () => {
+  savePersonBtn.addEventListener("click", saveNewPerson);
+  storagePromptYesBtn.addEventListener("click", async () => {
     localStorage.setItem(STORAGE_PROMPT_KEY, "seen");
     storagePromptDialog.close();
     await connectFolder();
   });
-  on(storagePromptNoBtn, "click", () => {
+  storagePromptNoBtn.addEventListener("click", () => {
     localStorage.setItem(STORAGE_PROMPT_KEY, "seen");
     storagePromptDialog.close();
   });
-  on(sectionsContainer, "click", handleSectionClicks);
-  on(sectionsContainer, "input", handleSectionInputs);
-  on(sectionsContainer, "dragstart", handleEntryDragStart);
-  on(sectionsContainer, "dragover", handleEntryDragOver);
-  on(sectionsContainer, "drop", handleEntryDrop);
-  on(sectionsContainer, "dragend", handleEntryDragEnd);
+  sectionsContainer.addEventListener("click", handleSectionClicks);
+  sectionsContainer.addEventListener("input", handleSectionInputs);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -264,24 +364,38 @@ function bindEvents() {
 }
 
 async function initApp() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {}
+  populateTemplateSelector();
   await hydrateFromConnectedFolder();
   render();
   maybePromptFolderConnection();
 }
 
-function clearRuntimeCache() {
+function loadState() {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(emptyState);
+    const parsed = JSON.parse(raw);
+    return sanitizeState(parsed);
   } catch (error) {
-    console.warn("Could not clear runtime cache", error);
+    console.warn("Could not load local state", error);
+    return structuredClone(emptyState);
   }
 }
 
-function loadState() {
-  return structuredClone(demoState);
+function sanitizeState(nextState) {
+  const candidate = nextState && Array.isArray(nextState.people)
+    ? { activePersonId: nextState.activePersonId || null, people: nextState.people }
+    : structuredClone(emptyState);
+
+  candidate.people.forEach(normalizePerson);
+  if (!candidate.people.length) {
+    candidate.activePersonId = null;
+    return candidate;
+  }
+  if (!candidate.activePersonId || !candidate.people.some((person) => person.id === candidate.activePersonId)) {
+    candidate.activePersonId = candidate.people[0].id;
+  }
+  return candidate;
 }
 
 function normalizePerson(person) {
@@ -290,10 +404,42 @@ function normalizePerson(person) {
   if (!Array.isArray(person.sections)) person.sections = [];
   if (!Array.isArray(person.auditLog)) person.auditLog = [];
   if (!Object.prototype.hasOwnProperty.call(person, "folderName")) person.folderName = null;
+  person.sections = person.sections.map(normalizeSection);
+}
+
+function normalizeSection(section) {
+  const nextSection = {
+    id: section.id || crypto.randomUUID(),
+    title: section.title || "Untitled section",
+    subtitle: section.subtitle || "",
+    renderMode: section.renderMode || "grid",
+    includeInCv: section.includeInCv !== false,
+    fields: Array.isArray(section.fields) ? section.fields.map((field) => ({
+      id: field.id || crypto.randomUUID(),
+      label: field.label || "Field",
+      key: slugify(field.key || field.label || crypto.randomUUID()),
+      type: field.type || "text",
+      width: field.width || "full"
+    })) : [],
+    entries: Array.isArray(section.entries) ? section.entries.map((entry) => ({
+      id: entry.id || crypto.randomUUID(),
+      values: { ...(entry.values || {}) }
+    })) : []
+  };
+  return nextSection;
 }
 
 function persist() {
+  persistToLocalStorage();
   queueFilesystemSave();
+}
+
+function persistToLocalStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn("Could not persist local state", error);
+  }
 }
 
 function currentPerson() {
@@ -302,14 +448,18 @@ function currentPerson() {
 
 function render() {
   const person = currentPerson();
-  if (profileNameInput) profileNameInput.value = person?.profile.name || "";
-  if (profileHeadlineInput) profileHeadlineInput.value = person?.profile.headline || "";
-  if (profileSummaryInput) profileSummaryInput.value = person?.profile.summary || "";
+  profileNameInput.value = person?.profile.name || "";
+  profileHeadlineInput.value = person?.profile.headline || "";
+  profileSummaryInput.value = person?.profile.summary || "";
+  profileNameInput.disabled = !person;
+  profileHeadlineInput.disabled = !person;
+  profileSummaryInput.disabled = !person;
   renderSections();
   renderDashboard();
   renderPreview();
   renderActivePersonCard();
   renderStorageStatus();
+  populateTemplateSelector();
   if (!hasPromptedPersonSelection && !personPickerDialog.open) {
     ensurePersonSelected();
   }
@@ -317,8 +467,12 @@ function render() {
 
 function renderSections() {
   const person = currentPerson();
-  if (!person?.sections.length) {
-    sectionsContainer.innerHTML = '<div class="empty-state">No sections yet. Create your first section to define a CV block.</div>';
+  if (!person) {
+    sectionsContainer.innerHTML = '<div class="empty-state">Add a person to start building a CV.</div>';
+    return;
+  }
+  if (!person.sections.length) {
+    sectionsContainer.innerHTML = '<div class="empty-state">No sections yet. Create your first section or add a template section.</div>';
     return;
   }
 
@@ -342,7 +496,7 @@ function renderSectionCard(section) {
             <span>${section.includeInCv ? "Included in output" : "Hidden from output"}</span>
           </div>
         </div>
-        <div class="button-stack">
+        <div class="button-stack action-stack-inline">
           <button data-action="toggle-include">${section.includeInCv ? "Hide in PDF" : "Show in PDF"}</button>
           <button data-action="edit-section">Edit schema</button>
           <button data-action="delete-section" class="danger">Delete section</button>
@@ -355,7 +509,19 @@ function renderSectionCard(section) {
 
 function renderDashboard() {
   const person = currentPerson();
-  if (!person) return;
+  if (!person) {
+    statsGrid.innerHTML = [
+      statCard("People", state.people.length, "Create a person to start"),
+      statCard("Sections", 0, "No active CV selected"),
+      statCard("Entries", 0, "No records yet"),
+      statCard("Storage", storageInfo.mode, storageInfo.detail)
+    ].join("");
+    sectionRegistry.innerHTML = '<div class="empty-state">No sections available yet.</div>';
+    activityList.innerHTML = '<div class="empty-state">No recent activity yet.</div>';
+    activityLogPanel.innerHTML = '<div class="empty-state">No recent activity yet.</div>';
+    return;
+  }
+
   const includedSections = person.sections.filter((section) => section.includeInCv).length;
   const totalEntries = person.sections.reduce((sum, section) => sum + section.entries.length, 0);
   const emptySections = person.sections.filter((section) => !section.entries.some((entry) => Object.values(entry.values || {}).some((value) => String(value).trim()))).length;
@@ -405,13 +571,10 @@ function renderEntryCard(section, entry) {
   }).join("");
 
   return `
-    <section class="entry-card" data-entry-id="${entry.id}" draggable="true" title="Drag to reorder entries">
+    <section class="entry-card" data-entry-id="${entry.id}">
       <div class="entry-header">
         <strong>${escapeHtml(summarizeEntry(section, entry))}</strong>
-        <div class="entry-actions">
-          <span class="entry-drag-hint" aria-hidden="true">Drag to reorder</span>
-          <button data-action="delete-entry" class="danger small">Delete entry</button>
-        </div>
+        <button data-action="delete-entry" class="danger small">Delete entry</button>
       </div>
       <div class="entry-body">${fieldsHtml}</div>
     </section>
@@ -470,96 +633,12 @@ function handleSectionInputs(event) {
   renderPreview();
   renderDashboard();
 }
-function handleEntryDragStart(event) {
-  const entryCard = event.target.closest(".entry-card");
-  const sectionEl = event.target.closest("[data-section-id]");
-  if (!entryCard || !sectionEl) return;
-
-  draggedEntryId = entryCard.dataset.entryId;
-  draggedSectionId = sectionEl.dataset.sectionId;
-  entryCard.classList.add("is-dragging");
-
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", draggedEntryId);
-  }
-}
-
-function handleEntryDragOver(event) {
-  const sectionEl = event.target.closest("[data-section-id]");
-  const entriesList = event.target.closest(".entries-list");
-  if (!sectionEl || !entriesList || !draggedEntryId || sectionEl.dataset.sectionId !== draggedSectionId) return;
-
-  event.preventDefault();
-  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-}
-
-function handleEntryDrop(event) {
-  const sectionEl = event.target.closest("[data-section-id]");
-  const entriesList = event.target.closest(".entries-list");
-  if (!sectionEl || !entriesList || !draggedEntryId || sectionEl.dataset.sectionId !== draggedSectionId) {
-    clearEntryDragState();
-    return;
-  }
-
-  event.preventDefault();
-
-  const person = currentPerson();
-  const section = person?.sections.find((item) => item.id === sectionEl.dataset.sectionId);
-  if (!section) {
-    clearEntryDragState();
-    return;
-  }
-
-  const fromIndex = section.entries.findIndex((item) => item.id === draggedEntryId);
-  if (fromIndex < 0) {
-    clearEntryDragState();
-    return;
-  }
-
-  const targetEntryEl = event.target.closest(".entry-card");
-  let targetIndex = section.entries.length;
-
-  if (targetEntryEl) {
-    const hoveredEntryId = targetEntryEl.dataset.entryId;
-    targetIndex = section.entries.findIndex((item) => item.id === hoveredEntryId);
-    if (targetIndex < 0) {
-      clearEntryDragState();
-      return;
-    }
-
-    const rect = targetEntryEl.getBoundingClientRect();
-    const insertAfter = event.clientY > rect.top + (rect.height / 2);
-    if (insertAfter) targetIndex += 1;
-  }
-
-  if (targetIndex > fromIndex) targetIndex -= 1;
-  if (targetIndex === fromIndex || targetIndex < 0) {
-    clearEntryDragState();
-    return;
-  }
-
-  const [movedEntry] = section.entries.splice(fromIndex, 1);
-  section.entries.splice(Math.min(targetIndex, section.entries.length), 0, movedEntry);
-
-  pushAudit("Reordered entries", `Updated entry order in ${section.title}.`);
-  persist();
-  render();
-  clearEntryDragState();
-}
-
-function handleEntryDragEnd() {
-  clearEntryDragState();
-}
-
-function clearEntryDragState() {
-  document.querySelectorAll(".entry-card.is-dragging").forEach((card) => card.classList.remove("is-dragging"));
-  draggedEntryId = null;
-  draggedSectionId = null;
-}
-
 
 function openSectionDialog(sectionId = null) {
+  if (!currentPerson()) {
+    window.alert("Add a person first before creating sections.");
+    return;
+  }
   editingSectionId = sectionId;
   const person = currentPerson();
   const section = person?.sections.find((item) => item.id === sectionId);
@@ -638,9 +717,33 @@ function saveSectionFromDialog() {
   sectionDialog.close();
 }
 
+function populateTemplateSelector() {
+  if (!sectionTemplateSelect) return;
+  sectionTemplateSelect.innerHTML = SECTION_TEMPLATES.map((template) => `<option value="${template.key}">${escapeHtml(template.label)}</option>`).join("");
+}
+
+function addSelectedTemplateSection() {
+  const person = currentPerson();
+  if (!person) {
+    window.alert("Add a person first before adding template sections.");
+    return;
+  }
+  const template = SECTION_TEMPLATES.find((item) => item.key === sectionTemplateSelect.value) || SECTION_TEMPLATES[0];
+  const preset = populateTemplate(template.create());
+  person.sections.push(preset);
+  pushAudit("Added template section", preset.title);
+  persist();
+  render();
+  activateTab("sectionsTab");
+}
+
 function openEntryDialog(preselectedSectionId = null) {
   const person = currentPerson();
-  if (!person?.sections.length) {
+  if (!person) {
+    window.alert("Add a person first so the new entry has somewhere to go.");
+    return;
+  }
+  if (!person.sections.length) {
     window.alert("Create a section first so the new entry has somewhere to go.");
     return;
   }
@@ -714,7 +817,11 @@ function reopenEntryDialogAfterAdd(mode) {
 
 function openImportDialog() {
   const person = currentPerson();
-  if (!person?.sections.length) {
+  if (!person) {
+    window.alert("Add a person first so the importer has a target.");
+    return;
+  }
+  if (!person.sections.length) {
     window.alert("Create a section first so the importer has a target.");
     return;
   }
@@ -754,11 +861,13 @@ function importRowsIntoSection() {
 function renderPreview() {
   const person = currentPerson();
   if (!person) {
-    cvPreview.innerHTML = "";
+    cvPreview.innerHTML = `
+      <h1 class="cv-document-title">Curriculum Vitae</h1>
+      <div class="empty-state">Add a person and some sections to render the CV preview.</div>
+    `;
     return;
   }
-  if (!cvPreview) return;
-  cvPreview.classList.toggle("show-guides", !!showGuidesToggle?.checked);
+  cvPreview.classList.toggle("show-guides", showGuidesToggle.checked);
   cvPreview.innerHTML = `
     <h1 class="cv-document-title">Curriculum Vitae</h1>
     <header class="cv-header">
@@ -803,7 +912,7 @@ function renderPairListEntry(section, entry) {
   const [labelField, valueField, ...rest] = section.fields;
   const label = labelField ? formatFieldOutput(labelField, entry.values?.[labelField.key] || "") : "";
   const value = valueField ? formatFieldOutput(valueField, entry.values?.[valueField.key] || "") : "";
-  const extras = rest.map((field) => renderNamedInline(field, entry.values?.[field.key] || "")).filter(Boolean).join("");
+  const extras = rest.map((field) => renderNamedInline(field, entry.values?.[field.key] || "")).filter(Boolean).join(" · ");
   if (!label && !value && !extras) return "";
   return `
     <article class="cv-entry cv-entry-pair">
@@ -817,7 +926,7 @@ function renderDateListEntry(section, entry) {
   const [dateField, mainField, ...rest] = section.fields;
   const dateValue = dateField ? formatFieldOutput(dateField, entry.values?.[dateField.key] || "") : "";
   const mainValue = mainField ? formatFieldOutput(mainField, entry.values?.[mainField.key] || "") : "";
-  const extras = rest.map((field) => renderNamedInline(field, entry.values?.[field.key] || "")).filter(Boolean).join("");
+  const extras = rest.map((field) => renderNamedInline(field, entry.values?.[field.key] || "")).filter(Boolean).join(" · ");
   if (!dateValue && !mainValue && !extras) return "";
   return `
     <article class="cv-entry cv-entry-date">
@@ -840,7 +949,7 @@ function renderPublicationEntry(section, entry) {
     const rendered = formatFieldOutput(field, entry.values?.[field.key] || "");
     if (!rendered) return "";
     return index === 0 ? rendered : `<div class="cv-entry-note">${renderNamedInline(field, entry.values?.[field.key] || "")}</div>`;
-  }).filter(Boolean).join("");
+  }).filter(Boolean).join(" · ");
   if (!leftValue && !body && !rightValue) return "";
   return `
     <article class="cv-entry cv-entry-publication">
@@ -873,12 +982,8 @@ function restoreState(event) {
   if (!file) return;
   file.text().then((text) => {
     const parsed = JSON.parse(text);
-    if (!Array.isArray(parsed.people) || !parsed.people.length) throw new Error("Invalid backup file.");
-    parsed.people.forEach(normalizePerson);
-    if (!parsed.activePersonId || !parsed.people.some((person) => person.id === parsed.activePersonId)) {
-      parsed.activePersonId = parsed.people[0].id;
-    }
-    state = parsed;
+    state = sanitizeState(parsed);
+    if (!state.people.length) throw new Error("Invalid backup file.");
     pushAudit("Restored backup", "Loaded CV registry from a JSON backup.");
     persist();
     render();
@@ -1003,13 +1108,22 @@ function renderActivePersonCard() {
 
 function openPersonPickerDialog() {
   hasPromptedPersonSelection = true;
+  if (!state.people.length) {
+    personPickerList.innerHTML = '<div class="empty-state">No people available yet.</div>';
+    personPickerDialog.showModal();
+    return;
+  }
+
   personPickerList.innerHTML = state.people.map((person) => `
-    <div class="registry-row">
+    <div class="registry-row registry-row-actions">
       <div>
         <strong>${escapeHtml(person.profile.name || "Unnamed person")}</strong>
         <div class="registry-meta">${escapeHtml(person.profile.headline || "No headline")}</div>
       </div>
-      <button type="button" data-select-person="${person.id}">Edit this CV</button>
+      <div class="button-stack action-stack-inline">
+        <button type="button" data-select-person="${person.id}">Edit this CV</button>
+        <button type="button" class="danger" data-delete-person="${person.id}">Delete</button>
+      </div>
     </div>
   `).join("");
 
@@ -1019,6 +1133,12 @@ function openPersonPickerDialog() {
       persist();
       render();
       personPickerDialog.close();
+    });
+  });
+
+  personPickerList.querySelectorAll("[data-delete-person]").forEach((button) => {
+    button.addEventListener("click", () => {
+      deletePerson(button.dataset.deletePerson);
     });
   });
 
@@ -1062,6 +1182,42 @@ function saveNewPerson() {
   personDialog.close();
 }
 
+async function deletePerson(personId) {
+  const person = state.people.find((item) => item.id === personId);
+  if (!person) return;
+
+  const label = person.profile?.name || "this person";
+  if (!window.confirm(`Delete ${label} and all associated CV data?`)) return;
+
+  state.people = state.people.filter((item) => item.id !== personId);
+
+  if (state.activePersonId === personId) {
+    state.activePersonId = state.people[0]?.id || null;
+  }
+
+  if (!state.people.length) {
+    hasPromptedPersonSelection = true;
+  }
+
+  if (folderHandle && person.folderName) {
+    try {
+      const peopleDir = await folderHandle.getDirectoryHandle("people");
+      await peopleDir.removeEntry(person.folderName, { recursive: true });
+    } catch (error) {
+      console.warn("Could not remove person folder", error);
+    }
+  }
+
+  persist();
+  render();
+
+  if (state.people.length) {
+    openPersonPickerDialog();
+  } else {
+    personPickerDialog.close();
+  }
+}
+
 function ensurePersonSelected() {
   if (state.people.length > 1) {
     openPersonPickerDialog();
@@ -1093,65 +1249,13 @@ function statCard(label, value, helper) {
   return `<article class="stat-card"><span class="eyebrow">${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong><div class="registry-meta">${escapeHtml(helper)}</div></article>`;
 }
 
-function addPresetSection(kind) {
-  const preset = createPresetSection(kind);
-  currentPerson().sections.push(preset);
-  pushAudit("Added preset section", preset.title);
-  persist();
-  render();
-  activateTab("sectionsTab");
-}
-
-function createPresetSection(kind) {
-  if (kind === "personal") {
-    return {
-      id: crypto.randomUUID(),
-      title: "Personal information",
-      subtitle: "",
-      renderMode: "pair-list",
-      includeInCv: true,
-      fields: [
-        { id: crypto.randomUUID(), label: "Label", key: "label", type: "text", width: "third" },
-        { id: crypto.randomUUID(), label: "Value", key: "value", type: "text", width: "full" }
-      ],
-      entries: [{ id: crypto.randomUUID(), values: { label: "", value: "" } }]
-    };
-  }
-  if (kind === "publication") {
-    return {
-      id: crypto.randomUUID(),
-      title: "Selected publications",
-      subtitle: "",
-      renderMode: "publication-list",
-      includeInCv: true,
-      fields: [
-        { id: crypto.randomUUID(), label: "No.", key: "number", type: "text", width: "quarter" },
-        { id: crypto.randomUUID(), label: "Citation", key: "citation", type: "textarea", width: "full" },
-        { id: crypto.randomUUID(), label: "Year", key: "year", type: "year", width: "quarter" }
-      ],
-      entries: [{ id: crypto.randomUUID(), values: { number: "", citation: "", year: "" } }]
-    };
-  }
-  return {
-    id: crypto.randomUUID(),
-    title: "Timeline section",
-    subtitle: "",
-    renderMode: "date-list",
-    includeInCv: true,
-    fields: [
-      { id: crypto.randomUUID(), label: "Period", key: "period", type: "text", width: "third" },
-      { id: crypto.randomUUID(), label: "Main entry", key: "main", type: "text", width: "full" },
-      { id: crypto.randomUUID(), label: "Details", key: "details", type: "textarea", width: "full" }
-    ],
-    entries: [{ id: crypto.randomUUID(), values: { period: "", main: "", details: "" } }]
-  };
-}
-
 function renderStorageStatus() {
   const folderName = folderHandle?.name || "No folder connected";
   const detail = storageInfo.lastSaved ? `Last saved ${storageInfo.lastSaved}` : storageInfo.detail;
+  const needsAttention = storageInfo.mode !== "folder-connected";
+  storagePanel.classList.toggle("storage-alert", needsAttention);
   storageStatus.innerHTML = `
-    <div class="registry-row">
+    <div class="registry-row ${needsAttention ? "storage-status-alert" : ""}">
       <div>
         <strong>${escapeHtml(folderName)}</strong>
         <div class="registry-meta">${escapeHtml(detail)}</div>
@@ -1173,6 +1277,7 @@ function queueFilesystemSave() {
       console.error("Filesystem save failed", error);
       storageInfo.mode = "needs-reconnect";
       storageInfo.detail = "Reconnect the CV_builder folder to resume autosave.";
+      storageInfo.lastSaved = "";
       renderStorageStatus();
     });
   }, 400);
@@ -1189,6 +1294,7 @@ async function connectFolder() {
     if (!granted) {
       storageInfo.mode = "permission-needed";
       storageInfo.detail = "Folder access was not granted.";
+      storageInfo.lastSaved = "";
       renderStorageStatus();
       return;
     }
@@ -1197,6 +1303,7 @@ async function connectFolder() {
     const loadedState = await loadStateFromFolder(handle);
     if (loadedState) {
       state = loadedState;
+      persistToLocalStorage();
     } else {
       await saveStateToFolder();
     }
@@ -1223,7 +1330,7 @@ async function hydrateFromConnectedFolder() {
     storageInfo.detail = "Connect the CV_builder folder to enable autosave JSON files.";
     return;
   }
-  const granted = await ensureHandlePermission(folderHandle, "readwrite", true);
+  const granted = await ensureHandlePermission(folderHandle, "readwrite", false);
   if (!granted) {
     storageInfo.mode = "needs-reconnect";
     storageInfo.detail = "Browser permission for the saved CV_builder folder was not granted on startup.";
@@ -1232,6 +1339,7 @@ async function hydrateFromConnectedFolder() {
   const loadedState = await loadStateFromFolder(folderHandle);
   if (loadedState) {
     state = loadedState;
+    persistToLocalStorage();
   }
   storageInfo.mode = "folder-connected";
   storageInfo.detail = "Autosave is active for this folder.";
@@ -1243,6 +1351,7 @@ async function saveStateToFolder() {
   if (!granted) {
     storageInfo.mode = "needs-reconnect";
     storageInfo.detail = "Reconnect the CV_builder folder to resume autosave.";
+    storageInfo.lastSaved = "";
     renderStorageStatus();
     return false;
   }
@@ -1369,6 +1478,22 @@ function maybePromptFolderConnection() {
   if (!("showDirectoryPicker" in window)) return;
   if (localStorage.getItem(STORAGE_PROMPT_KEY)) return;
   storagePromptDialog.showModal();
+}
+
+function populateTemplate(section, overrides = {}) {
+  return {
+    id: overrides.id || crypto.randomUUID(),
+    title: overrides.title || section.title,
+    subtitle: overrides.subtitle ?? section.subtitle,
+    renderMode: overrides.renderMode || section.renderMode,
+    includeInCv: overrides.includeInCv ?? section.includeInCv,
+    fields: (overrides.fields || section.fields).map((field) => ({ ...field, id: field.id || crypto.randomUUID() })),
+    entries: overrides.entries || section.entries || []
+  };
+}
+
+function makeField(label, key, type, width) {
+  return { id: crypto.randomUUID(), label, key, type, width };
 }
 
 function normalizeKey(value) {

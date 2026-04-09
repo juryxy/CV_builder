@@ -9,14 +9,6 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <section class="panel storage-panel" id="storagePanel">
-        <div class="panel-heading"><h2>Storage</h2></div>
-        <div id="storageStatus" class="registry-list"></div>
-        <div class="button-stack compact-stack">
-          <button id="connectFolderBtn">Connect CV_builder folder</button>
-        </div>
-      </section>
-
       <div class="brand">
         <p class="eyebrow">Offline CV Registry</p>
         <h1>CV Builder</h1>
@@ -30,20 +22,32 @@
         <button class="nav-item" data-tab-target="activityTab">Activity log</button>
       </nav>
 
-      <section class="panel">
-        <div class="panel-heading"><h2>People</h2></div>
-        <div id="activePersonCard" class="registry-list"></div>
-        <div class="button-stack compact-stack">
-          <button id="switchPersonBtn">Choose person</button>
-          <button id="addPersonBtn">Add a person</button>
+      <section class="panel" id="storagePanel">
+        <div class="panel-heading"><h2>Storage</h2></div>
+        <div id="storageStatus" class="registry-list"></div>
+        <div class="button-stack">
+          <button id="connectFolderBtn">Connect CV_builder folder</button>
         </div>
       </section>
 
       <section class="panel">
-        <div class="panel-heading"><h2>CV editing</h2></div>
+        <div class="panel-heading"><h2>People</h2></div>
+        <div id="activePersonCard" class="registry-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>Document</h2></div>
         <label class="field"><span>Full name</span><input id="profileName" type="text" placeholder="Jane Doe"></label>
         <label class="field"><span>Headline</span><input id="profileHeadline" type="text" placeholder="Strategy Consultant"></label>
         <label class="field"><span>Summary</span><textarea id="profileSummary" rows="5" placeholder="Short profile shown at the top of the CV"></textarea></label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>CV editing</h2></div>
+        <div class="button-stack">
+          <button id="switchPersonBtn">Choose person</button>
+          <button id="addPersonBtn">Add a person</button>
+        </div>
       </section>
 
       <section class="panel">
@@ -95,21 +99,17 @@
       </section>
 
       <section id="sectionsTab" class="workspace-panel tab-panel">
-        <div class="workspace-header section-header-stack">
+        <div class="workspace-header">
           <div><p class="eyebrow">Section Builder</p><h2>Manage CV sections</h2></div>
-          <p class="workspace-note">Create custom sections here and add reusable templates for the current CV.</p>
+          <p class="workspace-note">Each section defines its own fields, rendering mode, and entry layout.</p>
         </div>
-        <div class="section-toolbar">
-          <div class="toolbar-group">
-            <button id="addSectionBtn" class="primary">New section</button>
-          </div>
-          <div class="toolbar-group template-group">
-            <label class="field inline-field">
-              <span>Template section</span>
-              <select id="sectionTemplateSelect"></select>
-            </label>
-            <button id="addTemplateSectionBtn">Add template</button>
-          </div>
+        <div class="section-designer-toolbar">
+          <button id="addSectionBtn" class="primary">New section</button>
+          <label class="field compact-field">
+            <span>Template section</span>
+            <select id="sectionTemplateSelect"></select>
+          </label>
+          <button id="addTemplateSectionBtn">Add template section</button>
         </div>
         <div id="sectionsContainer" class="sections"></div>
       </section>
@@ -117,7 +117,7 @@
       <section id="previewTab" class="workspace-panel preview-panel tab-panel">
         <div class="workspace-header">
           <div><p class="eyebrow">PDF Preview</p><h2>Rendered CV</h2></div>
-          <p class="workspace-note">Use your browser's print dialog and choose "Save as PDF".</p>
+          <p class="workspace-note">Use your browser's print dialog and choose "Save as PDF". Disable "Headers and footers" for a clean export.</p>
         </div>
         <div class="preview-toolbar">
           <label class="inline-toggle"><input id="showGuidesToggle" type="checkbox"><span>Show print guides</span></label>
@@ -298,3 +298,5 @@
   <script src="app.js"></script>
 </body>
 </html>
+
+

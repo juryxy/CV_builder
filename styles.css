@@ -613,3 +613,13 @@ dialog::backdrop {
     margin: 14mm;
   }
 }
+
+
+#storagePanel.storage-alert { border-color: #c94b5f; background: rgba(255, 242, 244, 0.96); }
+#storagePanel.storage-alert .panel-heading h2,
+#storagePanel.storage-alert .registry-meta,
+#storagePanel.storage-alert strong { color: #8f2232; }
+.registry-row-actions { align-items: center; }
+.action-stack-inline { display: flex; gap: 0.5rem; }
+.section-designer-toolbar { display: flex; gap: 0.85rem; align-items: end; flex-wrap: wrap; margin-top: 1rem; }
+.compact-field { min-width: 260px; margin-bottom: 0; }
