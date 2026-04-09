@@ -1,6 +1,7 @@
 # CV Builder
 
 A simple offline CV builder for creating, editing, and exporting structured CVs in the browser.
+<img width="1557" height="745" alt="image" src="https://github.com/user-attachments/assets/89914252-1b5f-4ae0-8758-78d579b32e03" />
 
 ## What it does
 
