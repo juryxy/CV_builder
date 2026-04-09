@@ -275,6 +275,9 @@ let storageInfo = {
   detail: "Using browser backup only.",
   lastSaved: ""
 };
+let draggedSectionId = null;
+let draggedEntryId = null;
+let draggedEntrySectionId = null;
 
 bindEvents();
 initApp();
@@ -353,6 +356,10 @@ function bindEvents() {
   });
   sectionsContainer.addEventListener("click", handleSectionClicks);
   sectionsContainer.addEventListener("input", handleSectionInputs);
+  sectionsContainer.addEventListener("dragstart", handleSectionDragStart);
+  sectionsContainer.addEventListener("dragover", handleSectionDragOver);
+  sectionsContainer.addEventListener("drop", handleSectionDrop);
+  sectionsContainer.addEventListener("dragend", handleSectionDragEnd);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -487,7 +494,7 @@ function renderSectionCard(section) {
     : '<div class="empty-state">No entries yet. Add one below or import rows from Excel.</div>';
 
   return `
-    <article class="section-card" data-section-id="${section.id}">
+    <article class="section-card" data-section-id="${section.id}" draggable="true">
       <div class="section-card-header">
         <div>
           <h3>${escapeHtml(section.title)}</h3>
@@ -573,7 +580,7 @@ function renderEntryCard(section, entry) {
   }).join("");
 
   return `
-    <section class="entry-card" data-entry-id="${entry.id}">
+    <section class="entry-card" data-entry-id="${entry.id}" data-parent-section-id="${section.id}" draggable="true">
       <div class="entry-header">
         <strong>${escapeHtml(summarizeEntry(section, entry))}</strong>
         <button data-action="delete-entry" class="danger small">Delete entry</button>
@@ -590,6 +597,90 @@ function renderFieldInput(sectionId, entryId, field, value) {
     return `<textarea rows="4" ${common}>${encoded}</textarea>`;
   }
   return `<input type="${inputTypeFor(field.type)}" value="${encoded}" ${common}>`;
+}
+
+function handleSectionDragStart(event) {
+  const entryCard = event.target.closest(".entry-card[draggable='true']");
+  if (entryCard) {
+    draggedEntryId = entryCard.dataset.entryId;
+    draggedEntrySectionId = entryCard.dataset.parentSectionId;
+    draggedSectionId = null;
+    entryCard.classList.add("dragging");
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedEntryId);
+    }
+    return;
+  }
+
+  const sectionCard = event.target.closest(".section-card[draggable='true']");
+  if (sectionCard) {
+    draggedSectionId = sectionCard.dataset.sectionId;
+    draggedEntryId = null;
+    draggedEntrySectionId = null;
+    sectionCard.classList.add("dragging");
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedSectionId);
+    }
+  }
+}
+
+function handleSectionDragOver(event) {
+  const sectionCard = event.target.closest(".section-card");
+  const entryCard = event.target.closest(".entry-card");
+
+  if (draggedEntryId && entryCard && entryCard.dataset.parentSectionId === draggedEntrySectionId) {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    return;
+  }
+
+  if (draggedSectionId && sectionCard) {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  }
+}
+
+function handleSectionDrop(event) {
+  const person = currentPerson();
+  if (!person) return;
+
+  const targetEntry = event.target.closest(".entry-card");
+  if (draggedEntryId && targetEntry && targetEntry.dataset.parentSectionId === draggedEntrySectionId) {
+    event.preventDefault();
+    const section = person.sections.find((item) => item.id === draggedEntrySectionId);
+    if (!section) return;
+    const fromIndex = section.entries.findIndex((item) => item.id === draggedEntryId);
+    const toIndex = section.entries.findIndex((item) => item.id === targetEntry.dataset.entryId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    const [moved] = section.entries.splice(fromIndex, 1);
+    section.entries.splice(toIndex, 0, moved);
+    pushAudit("Reordered entries", `Updated entry order in ${section.title}.`);
+    persist();
+    render();
+    return;
+  }
+
+  const targetSection = event.target.closest(".section-card");
+  if (draggedSectionId && targetSection) {
+    event.preventDefault();
+    const fromIndex = person.sections.findIndex((item) => item.id === draggedSectionId);
+    const toIndex = person.sections.findIndex((item) => item.id === targetSection.dataset.sectionId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    const [moved] = person.sections.splice(fromIndex, 1);
+    person.sections.splice(toIndex, 0, moved);
+    pushAudit("Reordered sections", "Updated section order.");
+    persist();
+    render();
+  }
+}
+
+function handleSectionDragEnd() {
+  document.querySelectorAll(".dragging").forEach((element) => element.classList.remove("dragging"));
+  draggedSectionId = null;
+  draggedEntryId = null;
+  draggedEntrySectionId = null;
 }
 
 function handleSectionClicks(event) {
