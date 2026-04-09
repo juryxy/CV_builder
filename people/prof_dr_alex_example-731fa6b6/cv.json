@@ -1,0 +1,172 @@
+{
+  "id": "731fa6b6-2a40-40a2-b0d9-40fc7d6f3fae",
+  "folderName": "prof_dr_alex_example-731fa6b6",
+  "profile": {
+    "name": "Prof. Dr. Alex Example",
+    "headline": "Research Scientist",
+    "summary": "This starter layout mirrors the attached CV style more closely: a formal title, section headings, label-value rows for personal details, date-description rows for career history, and publication-style list rows."
+  },
+  "auditLog": [
+    {
+      "id": "6a796b5b-b819-4bf0-9f99-28e488038c62",
+      "action": "Reordered entries",
+      "detail": "Updated entry order in Personal information.",
+      "timestamp": "2026-04-09T11:16:24.313Z"
+    },
+    {
+      "id": "1c0ae7b5-1bd7-4a43-befb-029b6372e463",
+      "action": "Reordered entries",
+      "detail": "Updated entry order in Personal information.",
+      "timestamp": "2026-04-09T11:16:10.794Z"
+    },
+    {
+      "id": "17056e85-53f3-4a99-9197-3903ebe937a8",
+      "action": "Initialized demo CV registry",
+      "detail": "Loaded starter sections inspired by a formal academic CV template.",
+      "timestamp": "2026-04-09T11:16:01.670Z"
+    }
+  ],
+  "sections": [
+    {
+      "id": "62965ee7-6d66-4713-9cc8-dc074664721e",
+      "title": "Personal information",
+      "subtitle": "",
+      "renderMode": "pair-list",
+      "includeInCv": true,
+      "fields": [
+        {
+          "id": "575c0e5f-552d-44f1-8f6a-b50cba7b1d6a",
+          "label": "Label",
+          "key": "label",
+          "type": "text",
+          "width": "third"
+        },
+        {
+          "id": "8bfc16e5-c750-4854-a82e-f95f6d32c7e7",
+          "label": "Value",
+          "key": "value",
+          "type": "text",
+          "width": "full"
+        }
+      ],
+      "entries": [
+        {
+          "id": "213d513b-7028-40a2-b528-f02d07deff3e",
+          "values": {
+            "label": "Name",
+            "value": "Prof. Dr. Alex Example"
+          }
+        },
+        {
+          "id": "84fa0e4b-2d1d-40aa-afaf-39b73e0d964f",
+          "values": {
+            "label": "Address",
+            "value": "Institute for Example Research, Sample Street 1, 12345 Sample City, Germany"
+          }
+        },
+        {
+          "id": "bf008aec-39af-4786-9b1a-b0a8a4e2182f",
+          "values": {
+            "label": "E-mail",
+            "value": "alex@example.org"
+          }
+        },
+        {
+          "id": "142646db-3353-46f7-a39c-9be483c865e6",
+          "values": {
+            "label": "Nationality",
+            "value": "German"
+          }
+        }
+      ]
+    },
+    {
+      "id": "41525bd8-4f00-4f00-8f8d-baf557f2ef6c",
+      "title": "Professional experience",
+      "subtitle": "",
+      "renderMode": "date-list",
+      "includeInCv": true,
+      "fields": [
+        {
+          "id": "7abce63e-c988-4dd1-87b8-ed9cb60b7e25",
+          "label": "Period",
+          "key": "period",
+          "type": "text",
+          "width": "third"
+        },
+        {
+          "id": "55ab83af-47c5-4c2a-83b8-aa37941fe04c",
+          "label": "Role",
+          "key": "role",
+          "type": "text",
+          "width": "third"
+        },
+        {
+          "id": "e767d18a-68f0-457e-ba92-de6e5f66339f",
+          "label": "Institution",
+          "key": "institution",
+          "type": "text",
+          "width": "third"
+        },
+        {
+          "id": "e7e5fef7-be55-4dcb-ac6d-b5e3d2250e34",
+          "label": "Details",
+          "key": "details",
+          "type": "textarea",
+          "width": "full"
+        }
+      ],
+      "entries": [
+        {
+          "id": "b7eca155-e7c2-4928-a008-1da5723524ad",
+          "values": {
+            "period": "2022-2025",
+            "role": "Professor of Example Science",
+            "institution": "University of Examples",
+            "details": "Led an interdisciplinary lab focused on translational methods and digital biomarkers."
+          }
+        }
+      ]
+    },
+    {
+      "id": "9ffc3968-70fb-40a4-ade7-f41a89454f04",
+      "title": "Selected publications",
+      "subtitle": "",
+      "renderMode": "publication-list",
+      "includeInCv": true,
+      "fields": [
+        {
+          "id": "dca7eb59-63e0-4370-b4a9-727072348a90",
+          "label": "No.",
+          "key": "number",
+          "type": "text",
+          "width": "quarter"
+        },
+        {
+          "id": "f3a3b36c-140c-4c37-8804-e7f3fd3974ca",
+          "label": "Citation",
+          "key": "citation",
+          "type": "textarea",
+          "width": "full"
+        },
+        {
+          "id": "d9898386-23a3-49dd-b360-0673091ecc9f",
+          "label": "Year",
+          "key": "year",
+          "type": "year",
+          "width": "quarter"
+        }
+      ],
+      "entries": [
+        {
+          "id": "afaa2ff1-63ee-40ae-a3e6-304e377307cf",
+          "values": {
+            "number": "1",
+            "citation": "Example A, Researcher B, Sample C. A publication entry can be formatted here to match the compact table-like style of the Word CV.",
+            "year": "2025"
+          }
+        }
+      ]
+    }
+  ]
+}

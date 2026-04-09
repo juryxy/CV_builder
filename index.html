@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline CV Builder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <section class="panel storage-panel" id="storagePanel">
+        <div class="panel-heading"><h2>Storage</h2></div>
+        <div id="storageStatus" class="registry-list"></div>
+        <div class="button-stack compact-stack">
+          <button id="connectFolderBtn">Connect CV_builder folder</button>
+        </div>
+      </section>
+
+      <div class="brand">
+        <p class="eyebrow">Offline CV Registry</p>
+        <h1>CV Builder</h1>
+        <p class="subtitle">Dynamic forms, local records, audit-friendly edits, and print-ready CV output.</p>
+      </div>
+
+      <nav class="nav-list" aria-label="Primary">
+        <button class="nav-item active" data-tab-target="overviewTab">Overview</button>
+        <button class="nav-item" data-tab-target="sectionsTab">Section designer</button>
+        <button class="nav-item" data-tab-target="previewTab">CV preview</button>
+        <button class="nav-item" data-tab-target="activityTab">Activity log</button>
+      </nav>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>People</h2></div>
+        <div id="activePersonCard" class="registry-list"></div>
+        <div class="button-stack compact-stack">
+          <button id="switchPersonBtn">Choose person</button>
+          <button id="addPersonBtn">Add a person</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>CV editing</h2></div>
+        <label class="field"><span>Full name</span><input id="profileName" type="text" placeholder="Jane Doe"></label>
+        <label class="field"><span>Headline</span><input id="profileHeadline" type="text" placeholder="Strategy Consultant"></label>
+        <label class="field"><span>Summary</span><textarea id="profileSummary" rows="5" placeholder="Short profile shown at the top of the CV"></textarea></label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>Entries and import</h2></div>
+        <div class="button-stack">
+          <button id="addEntryFlowBtn" class="primary">Add new entry to CV</button>
+          <button id="importBtn">Import table</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>Backup and export</h2></div>
+        <div class="button-stack">
+          <button id="exportJsonBtn">Backup JSON</button>
+          <label class="file-button">Restore JSON<input id="restoreJsonInput" type="file" accept=".json,application/json"></label>
+          <button id="printBtn">Create PDF</button>
+          <button id="resetDemoBtn" class="ghost">Load demo data</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading"><h2>Tips</h2></div>
+        <ul class="tips">
+          <li>Use custom field types like date, bullets, and rich text.</li>
+          <li>Paste tabular data directly from Excel.</li>
+          <li>Toggle sections on or off before exporting.</li>
+          <li>When the folder is connected, each person is autosaved as JSON on disk.</li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <section id="overviewTab" class="workspace-panel tab-panel active">
+        <div class="workspace-header">
+          <div><p class="eyebrow">Study Dashboard Style</p><h2>CV dataset overview</h2></div>
+          <p class="workspace-note">A dashboard-inspired overview of local CV content and export readiness.</p>
+        </div>
+        <div id="statsGrid" class="stats-grid"></div>
+        <div class="split-panels">
+          <section class="mini-panel">
+            <div class="panel-heading"><h3>Section registry</h3></div>
+            <div id="sectionRegistry" class="registry-list"></div>
+          </section>
+          <section class="mini-panel">
+            <div class="panel-heading"><h3>Recent activity</h3></div>
+            <div id="activityList" class="activity-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="sectionsTab" class="workspace-panel tab-panel">
+        <div class="workspace-header section-header-stack">
+          <div><p class="eyebrow">Section Builder</p><h2>Manage CV sections</h2></div>
+          <p class="workspace-note">Create custom sections here and add reusable templates for the current CV.</p>
+        </div>
+        <div class="section-toolbar">
+          <div class="toolbar-group">
+            <button id="addSectionBtn" class="primary">New section</button>
+          </div>
+          <div class="toolbar-group template-group">
+            <label class="field inline-field">
+              <span>Template section</span>
+              <select id="sectionTemplateSelect"></select>
+            </label>
+            <button id="addTemplateSectionBtn">Add template</button>
+          </div>
+        </div>
+        <div id="sectionsContainer" class="sections"></div>
+      </section>
+
+      <section id="previewTab" class="workspace-panel preview-panel tab-panel">
+        <div class="workspace-header">
+          <div><p class="eyebrow">PDF Preview</p><h2>Rendered CV</h2></div>
+          <p class="workspace-note">Use your browser's print dialog and choose "Save as PDF".</p>
+        </div>
+        <div class="preview-toolbar">
+          <label class="inline-toggle"><input id="showGuidesToggle" type="checkbox"><span>Show print guides</span></label>
+        </div>
+        <div class="paper-wrap"><article id="cvPreview" class="cv-paper"></article></div>
+      </section>
+
+      <section id="activityTab" class="workspace-panel tab-panel">
+        <div class="workspace-header">
+          <div><p class="eyebrow">Audit Trail</p><h2>Change history</h2></div>
+          <p class="workspace-note">Inspired by eCRF audit logs, but stored locally in this browser only.</p>
+        </div>
+        <div id="activityLogPanel" class="audit-panel"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="sectionDialog">
+    <form method="dialog" class="dialog-card" id="sectionForm">
+      <div class="dialog-header">
+        <h3 id="sectionDialogTitle">New section</h3>
+        <button class="icon-btn" data-close-dialog="sectionDialog" type="button" aria-label="Close">X</button>
+      </div>
+      <div class="dialog-grid">
+        <label class="field"><span>Section title</span><input id="sectionTitleInput" type="text" required></label>
+        <label class="field"><span>Section subtitle</span><input id="sectionSubtitleInput" type="text" placeholder="Optional"></label>
+        <label class="field">
+          <span>Preview style</span>
+          <select id="sectionRenderModeInput">
+            <option value="grid">Flexible grid</option>
+            <option value="pair-list">Label and value rows</option>
+            <option value="date-list">Date and description rows</option>
+            <option value="publication-list">Index, text, and year rows</option>
+          </select>
+        </label>
+        <label class="field checkbox-field"><input id="sectionIncludeInput" type="checkbox" checked><span>Include in CV output by default</span></label>
+      </div>
+      <div class="schema-builder">
+        <div class="schema-header"><h4>Entry fields</h4><button id="addFieldBtn" type="button">Add field</button></div>
+        <div id="fieldRows" class="field-rows"></div>
+      </div>
+      <menu class="dialog-actions"><button type="submit" class="primary" value="default">Save section</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="importDialog">
+    <form method="dialog" class="dialog-card" id="importForm">
+      <div class="dialog-header">
+        <h3>Import table data</h3>
+        <button class="icon-btn" data-close-dialog="importDialog" type="button" aria-label="Close">X</button>
+      </div>
+      <div class="dialog-grid">
+        <label class="field"><span>Target section</span><select id="importSectionSelect"></select></label>
+        <label class="field">
+          <span>Separator</span>
+          <select id="importDelimiterSelect">
+            <option value="auto">Auto detect</option>
+            <option value="tab">Tab</option>
+            <option value=",">Comma</option>
+            <option value=";">Semicolon</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>Paste data copied from Excel, CSV, or TSV</span>
+        <textarea id="importTextarea" rows="12" placeholder="First row should contain column names"></textarea>
+      </label>
+      <p class="helper-text">Column names are matched to field labels, ids, or keys when possible.</p>
+      <menu class="dialog-actions"><button id="runImportBtn" type="button" class="primary">Import rows</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="entryDialog">
+    <form method="dialog" class="dialog-card" id="entryForm">
+      <div class="dialog-header">
+        <h3>Add new entry to CV</h3>
+        <button class="icon-btn" data-close-dialog="entryDialog" type="button" aria-label="Close">X</button>
+      </div>
+      <div class="dialog-grid">
+        <label class="field">
+          <span>Section</span>
+          <select id="entrySectionSelect"></select>
+        </label>
+      </div>
+      <div id="entryFormFields" class="entry-create-fields"></div>
+      <menu class="dialog-actions">
+        <button id="submitEntryBtn" type="button" class="primary">Add to CV</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="entryFollowupDialog">
+    <form method="dialog" class="dialog-card" id="entryFollowupForm">
+      <div class="dialog-header">
+        <h3>Entry added</h3>
+        <button class="icon-btn" data-close-dialog="entryFollowupDialog" type="button" aria-label="Close">X</button>
+      </div>
+      <p class="helper-text">Would you like to add another entry?</p>
+      <div class="button-stack">
+        <button id="followupSameSectionBtn" type="button" class="primary">Yes, same section</button>
+        <button id="followupDifferentSectionBtn" type="button">Yes, different section</button>
+        <button id="followupBackOverviewBtn" type="button">No, back to overview</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="personPickerDialog">
+    <form method="dialog" class="dialog-card" id="personPickerForm">
+      <div class="dialog-header">
+        <h3>Select person</h3>
+      </div>
+      <div id="personPickerList" class="registry-list"></div>
+      <menu class="dialog-actions">
+        <button id="personPickerAddBtn" type="button" class="primary">Add a person</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="personDialog">
+    <form method="dialog" class="dialog-card" id="personForm">
+      <div class="dialog-header">
+        <h3>Add a person</h3>
+        <button class="icon-btn" data-close-dialog="personDialog" type="button" aria-label="Close">X</button>
+      </div>
+      <div class="dialog-grid">
+        <label class="field"><span>Full name</span><input id="personNameInput" type="text" required></label>
+        <label class="field"><span>Headline</span><input id="personHeadlineInput" type="text"></label>
+      </div>
+      <label class="field"><span>Summary</span><textarea id="personSummaryInput" rows="5"></textarea></label>
+      <menu class="dialog-actions">
+        <button id="savePersonBtn" type="button" class="primary">Create person</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="fieldRowTemplate">
+    <div class="field-row">
+      <label class="field"><span>Label</span><input data-prop="label" type="text" required placeholder="Role"></label>
+      <label class="field"><span>Key</span><input data-prop="key" type="text" required placeholder="role"></label>
+      <label class="field">
+        <span>Type</span>
+        <select data-prop="type">
+          <option value="text">Text</option>
+          <option value="textarea">Paragraph</option>
+          <option value="bullets">Bullets</option>
+          <option value="date">Date</option>
+          <option value="month">Month</option>
+          <option value="year">Year</option>
+          <option value="email">Email</option>
+          <option value="url">URL</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Width</span>
+        <select data-prop="width">
+          <option value="full">Full</option>
+          <option value="half">Half</option>
+          <option value="third">Third</option>
+          <option value="quarter">Quarter</option>
+        </select>
+      </label>
+      <button type="button" class="danger small" data-action="remove-field">Remove</button>
+    </div>
+  </template>
+
+  <dialog id="storagePromptDialog">
+    <form method="dialog" class="dialog-card" id="storagePromptForm">
+      <div class="dialog-header">
+        <h3>Save CV data in CV_builder?</h3>
+      </div>
+      <p class="helper-text">On first start, you can connect the CV_builder directory so each person is autosaved into their own folder as JSON and reloaded on restart.</p>
+      <div class="button-stack">
+        <button id="storagePromptYesBtn" type="button" class="primary">Yes, save in CV_builder</button>
+        <button id="storagePromptNoBtn" type="button">Not now</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
